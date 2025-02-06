@@ -5,16 +5,24 @@ description = "Default template for PDM package"
 authors = [
     {name = "PookieBuns", email = "allenyuchen@hotmail.com"},
 ]
-dependencies = ["fastapi>=0.115.8", "uvicorn>=0.34.0"]
+dependencies = ["fastapi>=0.115.8", "uvicorn>=0.34.0", "pydantic-settings>=2.7.1", "loguru>=0.7.3"]
 requires-python = "==3.13.*"
 readme = "README.md"
 license = {text = "MIT"}
 
 
-[tool.pdm]
-distribution = false
-
 [dependency-groups]
 lint = [
     "mypy>=1.15.0",
 ]
+format = [
+    "black>=25.1.0",
+    "isort>=6.0.0",
+]
+
+[tool.mypy]
+plugins = ['pydantic.mypy']
+
+[tool.pdm]
+distribution = false
+
