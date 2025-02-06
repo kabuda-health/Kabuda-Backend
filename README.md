@@ -33,6 +33,8 @@ cp .env.example .env
 make dev
 ```
 
+5. Access the Swagger UI at http://localhost:3000/docs
+
 ### Formatting
 
 To format the code run `make format`.
