@@ -9,5 +9,7 @@ class Settings(BaseSettings):
     host: str
     port: int
 
+    secret_key: str
+
 
 settings = Settings(_env_file=".env")  # pyright: ignore[reportCallIssue]
