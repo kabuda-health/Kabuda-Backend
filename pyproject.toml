@@ -5,7 +5,7 @@ description = "Default template for PDM package"
 authors = [
     {name = "PookieBuns", email = "allenyuchen@hotmail.com"},
 ]
-dependencies = []
+dependencies = ["fastapi>=0.115.8", "uvicorn>=0.34.0"]
 requires-python = "==3.13.*"
 readme = "README.md"
 license = {text = "MIT"}
@@ -13,3 +13,8 @@ license = {text = "MIT"}
 
 [tool.pdm]
 distribution = false
+
+[dependency-groups]
+lint = [
+    "mypy>=1.15.0",
+]
