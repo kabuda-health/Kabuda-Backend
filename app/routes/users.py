@@ -25,9 +25,8 @@ ACCESS_CODE_TO_USER_DATA_MAP: dict[str, dict] = {}
 
 
 @router.get("/login/google")
-async def login(request: Request):
+async def login(request: Request, redirect_uri: str):
     state_token = request.query_params.get("state", secrets.token_urlsafe())
-    redirect_uri = request.query_params["redirect_uri"]
     STATE_TOKEN_TO_REDIRECT_URI_MAP[state_token] = redirect_uri
     google_callback_uri = request.url_for("google_callback")
     return await oauth.google.authorize_redirect(
@@ -42,7 +41,7 @@ async def google_callback(request: Request):
     token = await oauth.google.authorize_access_token(request)
     ACCESS_CODE_TO_USER_DATA_MAP[access_code] = token
     redirect_uri = (
-        STATE_TOKEN_TO_REDIRECT_URI_MAP[state_token]
+        STATE_TOKEN_TO_REDIRECT_URI_MAP.pop(state_token)
         + "?"
         + urllib.parse.urlencode({"code": access_code, "state": state_token})
     )
@@ -68,7 +67,7 @@ async def token(
     logger.info(f"{grant_type=}, {code=}, {refresh_token=}")
     match grant_type:
         case "authorization_code" if code:
-            token = ACCESS_CODE_TO_USER_DATA_MAP[code]
+            token = ACCESS_CODE_TO_USER_DATA_MAP.pop(code)
             user_info = token["userinfo"]
             user_email = user_info["email"]
             user_id = get_user_id(user_email)
