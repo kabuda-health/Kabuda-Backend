@@ -1,6 +1,5 @@
 from typing import Annotated
 
-from authlib.integrations.starlette_client import OAuth
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2AuthorizationCodeBearer
 
@@ -22,13 +21,6 @@ def get_auth_service() -> AuthService:
 
 
 AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
-
-
-def get_oauth_client(auth_service: AuthServiceDep) -> OAuth:
-    return auth_service.oauth_client
-
-
-OAuthClientDep = Annotated[OAuth, Depends(get_oauth_client)]
 
 
 def get_current_user(token: OAuthDep, auth_service: AuthServiceDep) -> dict:
