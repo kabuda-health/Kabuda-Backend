@@ -4,11 +4,20 @@ import arrow
 import jwt
 from authlib.integrations.starlette_client import OAuth
 from fastapi import Cookie, Depends, HTTPException
+from fastapi.security import OAuth2AuthorizationCodeBearer
 
 from app.settings import settings
 
 JWT_ALGORITHM = "HS256"
 GOOGLE_CONF_URL = "https://accounts.google.com/.well-known/openid-configuration"
+
+oauth2_scheme = OAuth2AuthorizationCodeBearer(
+    authorizationUrl="/api/users/login/google",
+    tokenUrl="/api/users/token",
+    refreshUrl="/api/users/token",
+)
+
+OAuthDep = Annotated[str, Depends(oauth2_scheme)]
 
 
 def create_jwt(user_id: str, name: str, email: str, exp: arrow.Arrow) -> str:
@@ -21,7 +30,7 @@ def get_user_id(username: str) -> int:
     return 1
 
 
-async def verify_access_token(access_token: Annotated[str, Cookie()]) -> dict:
+def verify_access_token(access_token: OAuthDep) -> dict:
     try:
         return jwt.decode(access_token, settings.secret_key, algorithms=[JWT_ALGORITHM])
     except Exception as e:
@@ -31,11 +40,13 @@ async def verify_access_token(access_token: Annotated[str, Cookie()]) -> dict:
 AuthDep = Annotated[dict, Depends(verify_access_token)]
 
 
-async def verify_refresh_token(refresh_token: Annotated[str, Cookie()]) -> dict:
+def verify_refresh_token(refresh_token: str) -> dict:
     try:
-        return jwt.decode(
+        data = jwt.decode(
             refresh_token, settings.secret_key, algorithms=[JWT_ALGORITHM]
         )
+        # TODO: Check against the database
+        return data
     except Exception as e:
         raise HTTPException(status_code=403, detail=str(e))
 
