@@ -6,6 +6,7 @@ import jwt
 from authlib.integrations.starlette_client import OAuth
 from loguru import logger
 
+from app.models.user import User, UserCreate
 from app.settings import settings
 
 JWT_ALGORITHM = "HS256"
@@ -31,7 +32,7 @@ class AuthService:
         client_kwargs={"scope": "openid email profile"},
     )
     state_token_to_redirect_uri_map: dict[str, str] = {}
-    access_code_to_user_data_map: dict[str, dict] = {}
+    access_code_to_user_data_map: dict[str, UserCreate] = {}
 
     @staticmethod
     def create_jwt(user_id: str, name: str, email: str, exp: arrow.Arrow) -> str:
@@ -63,12 +64,14 @@ class AuthService:
     def fetch_redirect_uri(self, key: str) -> str:
         return self.state_token_to_redirect_uri_map.pop(key)
 
-    def cache_user_data(self, user_data: dict) -> str:
+    def cache_user_data(self, token: dict) -> str:
         access_code = secrets.token_urlsafe()
+        user_info = token["userinfo"]
+        user_data = UserCreate(name=user_info["name"], email=user_info["email"])
         self.access_code_to_user_data_map[access_code] = user_data
         return access_code
 
-    def fetch_user_data(self, access_code: str) -> dict:
+    def fetch_user_data(self, access_code: str) -> UserCreate:
         return self.access_code_to_user_data_map.pop(access_code)
 
     def exchange_tokens(
@@ -77,28 +80,25 @@ class AuthService:
         logger.info(f"{grant_type=}, {code=}, {refresh_token=}")
         match grant_type:
             case "authorization_code" if code:
-                token = self.fetch_user_data(code)
-                user_info = token["userinfo"]
-                user_email = user_info["email"]
-                user_id = self.get_user_id(user_email)
-                user_name = user_info["name"]
+                user_create = self.fetch_user_data(code)
+                user_id = self.get_user_id(user_create.email)
+                user = User.from_user_create(user_create, user_id)
+                print(user)
             case "refresh_token" if refresh_token:
                 jwt = self.verify_refresh_token(refresh_token)
-                user_email = jwt["email"]
-                user_id = jwt["sub"]
-                user_name = jwt["name"]
+                user = User(id=jwt["sub"], name=jwt["name"], email=jwt["email"])
             case _:
                 raise ValueError(f"Invalid grant type: {grant_type}")
         access_token = self.create_jwt(
-            user_id=str(user_id),
-            name=user_name,
-            email=user_email,
+            user_id=str(user.id),
+            name=user.name,
+            email=user.email,
             exp=access_token_expiry(),
         )
         refresh_token = self.create_jwt(
-            user_id=str(user_id),
-            name=user_name,
-            email=user_email,
+            user_id=str(user.id),
+            name=user.name,
+            email=user.email,
             exp=refresh_token_expiry(),
         )
         return {"access_token": access_token, "refresh_token": refresh_token}
