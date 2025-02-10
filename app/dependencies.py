@@ -4,6 +4,7 @@ from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2AuthorizationCodeBearer
 
 from app.models.user import User
+from app.repositories.user_repository import MemUserRepo
 from app.services.auth_service import AuthService
 
 oauth2 = OAuth2AuthorizationCodeBearer(
@@ -14,7 +15,7 @@ oauth2 = OAuth2AuthorizationCodeBearer(
 
 OAuthDep = Annotated[str, Depends(oauth2)]
 
-auth_service = AuthService()
+auth_service = AuthService(MemUserRepo())
 
 
 def get_auth_service() -> AuthService:

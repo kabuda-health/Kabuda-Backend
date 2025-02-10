@@ -5,6 +5,7 @@ from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
 
 from app.dependencies import AuthServiceDep
+from app.models import Token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -15,7 +16,7 @@ async def login(
     redirect_uri: str,
     state: Optional[str],
     auth_service: AuthServiceDep,
-):
+) -> RedirectResponse:
     state_token = auth_service.cache_redirect_uri(state, redirect_uri)
     google_callback_uri = request.url_for("google_callback")
     return await auth_service.oauth_client.google.authorize_redirect(
@@ -24,7 +25,9 @@ async def login(
 
 
 @router.get("/login/google/callback")
-async def google_callback(request: Request, state: str, auth_service: AuthServiceDep):
+async def google_callback(
+    request: Request, state: str, auth_service: AuthServiceDep
+) -> RedirectResponse:
     token = await auth_service.oauth_client.google.authorize_access_token(request)
     access_code = auth_service.cache_user_data(token)
     redirect_uri = (
@@ -41,7 +44,7 @@ async def token(
     grant_type: str = Form(...),
     code: Optional[str] = Form(None),
     refresh_token: Optional[str] = Form(None),
-):
+) -> Token:
     try:
         return auth_service.exchange_tokens(grant_type, code, refresh_token)
     except ValueError as e:
