@@ -23,6 +23,10 @@ def refresh_token_expiry():
     return arrow.utcnow().shift(days=7)
 
 
+class InvalidGrantError(ValueError):
+    pass
+
+
 class AuthService:
 
     def __init__(self, user_repo: UserRepo) -> None:
@@ -90,7 +94,7 @@ class AuthService:
                 jwt = self.verify_refresh_token(refresh_token)
                 user = User(id=jwt["sub"], name=jwt["name"], email=jwt["email"])
             case _:
-                raise ValueError(f"Invalid grant type: {grant_type}")
+                raise InvalidGrantError(f"Invalid grant type: {grant_type}")
         access_token = self.create_jwt(
             user_id=str(user.id),
             name=user.name,

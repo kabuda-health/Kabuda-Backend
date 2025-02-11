@@ -5,6 +5,7 @@ from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
 
 from app.dependencies import AuthServiceDep
+from app.errors import InvalidGrantError
 from app.models import Token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -47,5 +48,5 @@ async def token(
 ) -> Token:
     try:
         return await auth_service.exchange_tokens(grant_type, code, refresh_token)
-    except ValueError as e:
+    except InvalidGrantError as e:
         raise HTTPException(status_code=400, detail=str(e))

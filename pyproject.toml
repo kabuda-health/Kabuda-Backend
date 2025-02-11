@@ -25,11 +25,7 @@ license = { text = "MIT" }
 
 
 [dependency-groups]
-lint = [
-    "mypy>=1.15.0",
-    "types-Authlib>=1.4.0.20241230",
-    "ruff>=0.9.6",
-]
+lint = ["mypy>=1.15.0", "types-Authlib>=1.4.0.20241230", "ruff>=0.9.6"]
 format = ["black>=25.1.0", "isort>=6.0.0"]
 migration = ["alembic>=1.14.1", "psycopg2-binary>=2.9.10"]
 
