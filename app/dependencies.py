@@ -2,10 +2,13 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2AuthorizationCodeBearer
+from pydantic import AnyUrl
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.models.user import User
-from app.repositories.user_repository import MemUserRepo
+from app.repositories.user_repository import PgUserRepo
 from app.services.auth_service import AuthService
+from app.settings import settings
 
 oauth2 = OAuth2AuthorizationCodeBearer(
     authorizationUrl="/api/auth/login/google",
@@ -15,7 +18,20 @@ oauth2 = OAuth2AuthorizationCodeBearer(
 
 OAuthDep = Annotated[str, Depends(oauth2)]
 
-auth_service = AuthService(MemUserRepo())
+pg_engine = create_async_engine(
+    str(
+        AnyUrl.build(
+            scheme="postgresql+asyncpg",
+            username=settings.db_user,
+            password=settings.db_password,
+            host=settings.db_host,
+            port=settings.db_port,
+            path=settings.db_name,
+        )
+    )
+)
+
+auth_service = AuthService(PgUserRepo(pg_engine))
 
 
 def get_auth_service() -> AuthService:
