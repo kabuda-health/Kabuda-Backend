@@ -1,4 +1,5 @@
 import uvicorn
+from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI
 from loguru import logger
 from starlette.middleware.sessions import SessionMiddleware
@@ -9,6 +10,7 @@ from .settings import settings
 app = FastAPI()
 app.include_router(api_router)
 app.add_middleware(SessionMiddleware, secret_key=settings.secret_key)
+app.add_middleware(CorrelationIdMiddleware)
 
 
 @app.get("/")

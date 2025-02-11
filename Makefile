@@ -4,3 +4,4 @@ dev:
 format:
 	isort app
 	black app
+	taplo fmt

@@ -5,6 +5,7 @@
 ### Prerequisites
 
 - [pdm](https://pdm-project.org/latest/#other-installation-methods)
+- [taplo](https://taplo.tamasfe.dev/cli/installation/homebrew.html) (for formatting TOML files)
 
 ### Setup
 
@@ -25,6 +26,13 @@ pdm install
 
 ```
 cp .env.example .env
+```
+
+4. Add client_id and client_secret to the `.env` file
+
+```
+echo "google_auth_client_id=YOUR_CLIENT_ID" >> .env
+echo "google_auth_client_secret=YOUR_CLIENT_SECRET" >> .env
 ```
 
 4. Run the development server
