@@ -6,7 +6,9 @@ import jwt
 from authlib.integrations.starlette_client import OAuth
 from loguru import logger
 
+from app.models import Token
 from app.models.user import User, UserCreate
+from app.repositories.user_repository import UserRepo
 from app.settings import settings
 
 JWT_ALGORITHM = "HS256"
@@ -23,16 +25,19 @@ def refresh_token_expiry():
 
 class AuthService:
 
-    oauth_client = OAuth()
-    oauth_client.register(
-        name="google",
-        client_id=settings.google_auth_client_id,
-        client_secret=settings.google_auth_client_secret,
-        server_metadata_url=GOOGLE_CONF_URL,
-        client_kwargs={"scope": "openid email profile"},
-    )
-    state_token_to_redirect_uri_map: dict[str, str] = {}
-    access_code_to_user_data_map: dict[str, UserCreate] = {}
+    def __init__(self, user_repo: UserRepo) -> None:
+        oauth_client = OAuth()
+        oauth_client.register(
+            name="google",
+            client_id=settings.google_auth_client_id,
+            client_secret=settings.google_auth_client_secret,
+            server_metadata_url=GOOGLE_CONF_URL,
+            client_kwargs={"scope": "openid email profile"},
+        )
+        self.oauth_client = oauth_client
+        self.state_token_to_redirect_uri_map: dict[str, str] = {}
+        self.access_code_to_user_data_map: dict[str, UserCreate] = {}
+        self.user_repo = user_repo
 
     @staticmethod
     def create_jwt(user_id: str, name: str, email: str, exp: arrow.Arrow) -> str:
@@ -50,10 +55,6 @@ class AuthService:
         data = self.verify_jwt(token)
         # TODO: Check against the database
         return data
-
-    def get_user_id(self, user_email: str) -> int:
-        # TODO: Implement this function
-        return 1
 
     def cache_redirect_uri(self, key: Optional[str], redirect_uri: str) -> str:
         if key is None:
@@ -76,14 +77,15 @@ class AuthService:
 
     def exchange_tokens(
         self, grant_type: str, code: Optional[str], refresh_token: Optional[str]
-    ) -> dict:
+    ) -> Token:
         logger.info(f"{grant_type=}, {code=}, {refresh_token=}")
         match grant_type:
             case "authorization_code" if code:
                 user_create = self.fetch_user_data(code)
-                user_id = self.get_user_id(user_create.email)
-                user = User.from_user_create(user_create, user_id)
-                print(user)
+                user = self.user_repo.get_user_by_email(user_create.email)
+                if user is None:
+                    logger.info(f"Creating user: {user_create}")
+                    user = self.user_repo.create_user(user_create)
             case "refresh_token" if refresh_token:
                 jwt = self.verify_refresh_token(refresh_token)
                 user = User(id=jwt["sub"], name=jwt["name"], email=jwt["email"])
@@ -101,8 +103,4 @@ class AuthService:
             email=user.email,
             exp=refresh_token_expiry(),
         )
-        return {"access_token": access_token, "refresh_token": refresh_token}
-
-
-if __name__ == "__main__":
-    print(AuthService.oauth_client)
+        return Token(access_token=access_token, refresh_token=refresh_token)
