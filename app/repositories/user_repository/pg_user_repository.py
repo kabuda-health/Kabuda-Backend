@@ -40,11 +40,10 @@ class PgUserRepo:
         async with self.get_transaction() as conn:
             stmt = (
                 select(UserDb)
-                .where(UserDb.id == user_id, UserDb.deleted_at == None)  # noqa
+                .where(UserDb.id == user_id, UserDb.deleted_at.is_(None))
                 .limit(1)
             )
-            result = await conn.execute(stmt)
-            user = result.scalar()
+            user = await conn.scalar(stmt)
             if user is not None:
                 user = User.model_validate(user)
             return user
@@ -55,13 +54,11 @@ class PgUserRepo:
                 select(UserDb)
                 .where(
                     UserDb.email == email,
-                    UserDb.deleted_at == None,  # noqa
+                    UserDb.deleted_at.is_(None),
                 )
                 .limit(1)
             )
-            result = await conn.execute(stmt)
-            user = result.scalar()
-            # user = await result.scalar()
+            user = await conn.scalar(stmt)
             if user is not None:
                 user = User.model_validate(user)
             return user
@@ -69,8 +66,7 @@ class PgUserRepo:
     async def create_user(self, user: UserCreate) -> User:
         async with self.get_transaction() as conn:
             stmt = insert(UserDb).values(**user.model_dump()).returning(UserDb)
-            result = await conn.execute(stmt)
-            created_user = result.one()
+            created_user = await conn.scalar(stmt)
             return User.model_validate(created_user)
 
     async def create_session(self, user_id: int, session_id: str) -> str:
@@ -89,8 +85,8 @@ class PgUserRepo:
                 update(SessionDb)
                 .where(
                     SessionDb.user_id == user_id,
-                    SessionDb.deleted_at == None,  # noqa
-                    SessionDb.invalidated_at == None,  # noqa
+                    SessionDb.deleted_at.is_(None),
+                    SessionDb.invalidated_at.is_(None),
                 )
                 .values(invalidated_at=datetime.now(timezone.utc).replace(tzinfo=None))
             )
@@ -103,12 +99,11 @@ class PgUserRepo:
                 .where(
                     SessionDb.user_id == user_id,
                     SessionDb.token == session_id,
-                    SessionDb.deleted_at == None,  # noqa
+                    SessionDb.deleted_at.is_(None),
                 )
                 .limit(1)
             )
-            result = await conn.execute(stmt)
-            session = result.scalar()
+            session = await conn.scalar(stmt)
             if session is not None:
                 session = Session.model_validate(session)
             return session
