@@ -75,17 +75,17 @@ class AuthService:
     def fetch_user_data(self, access_code: str) -> UserCreate:
         return self.access_code_to_user_data_map.pop(access_code)
 
-    def exchange_tokens(
+    async def exchange_tokens(
         self, grant_type: str, code: Optional[str], refresh_token: Optional[str]
     ) -> Token:
         logger.info(f"{grant_type=}, {code=}, {refresh_token=}")
         match grant_type:
             case "authorization_code" if code:
                 user_create = self.fetch_user_data(code)
-                user = self.user_repo.get_user_by_email(user_create.email)
+                user = await self.user_repo.get_user_by_email(user_create.email)
                 if user is None:
                     logger.info(f"Creating user: {user_create}")
-                    user = self.user_repo.create_user(user_create)
+                    user = await self.user_repo.create_user(user_create)
             case "refresh_token" if refresh_token:
                 jwt = self.verify_refresh_token(refresh_token)
                 user = User(id=jwt["sub"], name=jwt["name"], email=jwt["email"])

@@ -46,6 +46,6 @@ async def token(
     refresh_token: Optional[str] = Form(None),
 ) -> Token:
     try:
-        return auth_service.exchange_tokens(grant_type, code, refresh_token)
+        return await auth_service.exchange_tokens(grant_type, code, refresh_token)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

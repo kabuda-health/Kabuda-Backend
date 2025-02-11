@@ -1,17 +1,17 @@
 """create autoupdate trigger
 
 Revision ID: f1be1b86f919
-Revises: 
+Revises:
 Create Date: 2025-02-10 13:04:34.706813
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
 
-
 # revision identifiers, used by Alembic.
-revision: str = 'f1be1b86f919'
+revision: str = "f1be1b86f919"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
