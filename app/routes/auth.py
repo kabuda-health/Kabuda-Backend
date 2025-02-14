@@ -1,5 +1,5 @@
 import urllib.parse
-from typing import Optional
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
@@ -42,9 +42,9 @@ async def google_callback(
 @router.post("/token")
 async def token(
     auth_service: AuthServiceDep,
-    grant_type: str = Form(...),
-    code: Optional[str] = Form(None),
-    refresh_token: Optional[str] = Form(None),
+    grant_type: Annotated[str, Form()],
+    code: Annotated[Optional[str], Form()] = None,
+    refresh_token: Annotated[Optional[str], Form()] = None,
 ) -> Token:
     try:
         return await auth_service.exchange_tokens(grant_type, code, refresh_token)

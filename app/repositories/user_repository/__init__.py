@@ -8,7 +8,6 @@ from .pg_user_repository import PgUserRepo
 
 
 class UserRepo(Protocol):
-
     async def get_user_by_id(self, user_id: int) -> Optional[User]: ...
 
     async def get_user_by_email(self, email: str) -> Optional[User]: ...
@@ -29,7 +28,6 @@ class UserRepo(Protocol):
 
 
 class MockUserRepo(UserRepo):
-
     async def get_user_by_id(self, user_id: int) -> Optional[User]:
         return User(id=user_id, name="Alice", email="alice@alice.com")
 

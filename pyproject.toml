@@ -1,8 +1,9 @@
 [project]
 name = "Kabuda-Backend"
 version = "0.1.0"
-description = "Default template for PDM package"
-authors = [{ name = "PookieBuns", email = "allenyuchen@hotmail.com" }]
+description = "Kabuda-Backend backend API service"
+readme = "README.md"
+requires-python = ">=3.13"
 dependencies = [
   "fastapi>=0.115.8",
   "uvicorn>=0.34.0",
@@ -19,21 +20,19 @@ dependencies = [
   "asyncpg>=0.30.0",
   "sqlalchemy[asyncio]>=2.0.38",
 ]
-requires-python = "==3.13.*"
-readme = "README.md"
-license = { text = "MIT" }
-
 
 [dependency-groups]
-lint = ["mypy>=1.15.0", "types-Authlib>=1.4.0.20241230", "ruff>=0.9.6"]
-format = ["black>=25.1.0", "isort>=6.0.0"]
-migration = ["alembic>=1.14.1", "psycopg2-binary>=2.9.10"]
+dev = [
+  "mypy>=1.15.0",
+  "types-Authlib>=1.4.0.20241230",
+  "ruff>=0.9.6",
+  "alembic>=1.14.1",
+  "psycopg2-binary>=2.9.10",
+  "taplo>=0.9.3",
+]
 
 [tool.mypy]
 plugins = ['pydantic.mypy']
 
-[tool.isort]
-profile = "black"
-
-[tool.pdm]
-distribution = false
+[tool.ruff.lint]
+extend-select = ["FAST", "I", "PL"]
