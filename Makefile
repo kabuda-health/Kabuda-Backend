@@ -9,6 +9,7 @@ format:
 lint:
 	uv run -- mypy app
 	uv run -- ruff check
+	uv run -- ruff format --check
 
 migrate:
 	uv run -- alembic upgrade head
