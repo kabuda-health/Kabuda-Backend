@@ -33,7 +33,6 @@ class InvalidTokenError(ValueError):
 
 
 class AuthService:
-
     def __init__(self, user_repo: UserRepo) -> None:
         oauth_client = OAuth()
         oauth_client.register(
