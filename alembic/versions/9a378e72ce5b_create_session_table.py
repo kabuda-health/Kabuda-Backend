@@ -25,7 +25,7 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer, primary_key=True),
         sa.Column("user_id", sa.Integer, sa.ForeignKey("user.id"), nullable=False),
         sa.Column("token", sa.String, nullable=False),
-        sa.Column("expired_at", sa.DateTime, nullable=True),
+        sa.Column("invalidated_at", sa.DateTime, nullable=True),
         sa.Column(
             "created_at", sa.DateTime, server_default=sa.func.now(), nullable=False
         ),
@@ -35,14 +35,14 @@ def upgrade() -> None:
         sa.Column("deleted_at", sa.DateTime, nullable=True),
     )
     op.execute("select diesel_manage_updated_at('session');")
-    # only one non-expired session per user
+    # only one non-invalidated session per user
     op.create_index(
-        "ix_session_user_id_not_expired_not_deleted",
+        "ix_session_user_id_not_invalidated_not_deleted",
         "session",
         ["user_id"],
         unique=True,
         postgresql_where=sa.and_(
-            sa.column("expired_at") == None,  # noqa: E711
+            sa.column("invalidated_at") == None,  # noqa: E711
             sa.column("deleted_at") == None,  # noqa: E711
         ),
     )
