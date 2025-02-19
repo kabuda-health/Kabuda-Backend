@@ -11,7 +11,7 @@
 1. Clone the repository
 
 ```bash
-git clone https://github.com/Onexyq/Kabuda-Backend.git
+git clone https://github.com/kabuda-health/Kabuda-Backend.git
 ```
 
 2. Install dependencies
