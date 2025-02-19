@@ -1,13 +1,15 @@
 dev:
-	python -m app.main
+	uv run -m app.main
 
 format:
-	isort app
-	black app
-	isort alembic
-	black alembic
-	taplo fmt
+	uv run -- ruff check --select I --fix
+	uv run -- ruff format
+	uv run -- taplo fmt
 
 lint:
-	mypy app
-	ruff check
+	uv run -- mypy app
+	uv run -- ruff check
+	uv run -- ruff format --check
+
+migrate:
+	uv run -- alembic upgrade head
