@@ -4,6 +4,7 @@ from typing import Optional
 
 import arrow
 import jwt
+import asyncio
 from authlib.integrations.starlette_client import OAuth
 from loguru import logger
 
@@ -46,6 +47,7 @@ class AuthService:
         self.state_token_to_redirect_uri_map: dict[str, str] = {}
         self.access_code_to_user_data_map: dict[str, UserCreate] = {}
         self.user_repo = user_repo
+        self.lock = asyncio.Lock()
 
     @staticmethod
     def create_jwt(user_id: str, name: str, email: str, exp: arrow.Arrow) -> str:
@@ -94,11 +96,12 @@ class AuthService:
         async with self.user_repo.transaction():
             match grant_type:
                 case "authorization_code" if code:
-                    user_create = self.fetch_user_data(code)
-                    user = await self.user_repo.get_user_by_email(user_create.email)
-                    if user is None:
-                        logger.info(f"Creating user: {user_create}")
-                        user = await self.user_repo.create_user(user_create)
+                    async with self.lock:
+                        user_create = self.fetch_user_data(code)
+                        user = await self.user_repo.get_user_by_email(user_create.email)
+                        if user is None:
+                            logger.info(f"Creating user: {user_create}")
+                            user = await self.user_repo.create_user(user_create)
                 case "refresh_token" if refresh_token:
                     try:
                         jwt = self.verify_refresh_token(refresh_token)
