@@ -19,6 +19,7 @@ dependencies = [
   "asgi-correlation-id>=4.3.4",
   "asyncpg>=0.30.0",
   "sqlalchemy[asyncio]>=2.0.38",
+  "strawberry-graphql>=0.260.2",
 ]
 
 [dependency-groups]
