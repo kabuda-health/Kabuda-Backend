@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.13"
 
 [[package]]
@@ -193,6 +194,15 @@ wheels = [
 ]
 
 [[package]]
+name = "graphql-core"
+version = "3.2.6"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/c4/16/7574029da84834349b60ed71614d66ca3afe46e9bf9c7b9562102acb7d4f/graphql_core-3.2.6.tar.gz", hash = "sha256:c08eec22f9e40f0bd61d805907e3b3b1b9a320bc606e23dc145eebca07c8fbab", size = 505353 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ae/4f/7297663840621022bc73c22d7d9d80dbc78b4db6297f764b545cd5dd462d/graphql_core-3.2.6-py3-none-any.whl", hash = "sha256:78b016718c161a6fb20a7d97bbf107f331cd1afe53e45566c59f776ed7f0b45f", size = 203416 },
+]
+
+[[package]]
 name = "greenlet"
 version = "3.1.1"
 source = { registry = "https://pypi.org/simple" }
@@ -289,6 +299,7 @@ dependencies = [
     { name = "pyjwt" },
     { name = "python-multipart" },
     { name = "sqlalchemy", extra = ["asyncio"] },
+    { name = "strawberry-graphql" },
     { name = "uvicorn" },
 ]
 
@@ -317,6 +328,7 @@ requires-dist = [
     { name = "pyjwt", specifier = ">=2.10.1" },
     { name = "python-multipart", specifier = ">=0.0.20" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.38" },
+    { name = "strawberry-graphql", specifier = ">=0.260.2" },
     { name = "uvicorn", specifier = ">=0.34.0" },
 ]
 
@@ -618,6 +630,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ff/fb/2984a686808b89a6781526129a4b51266f678b2d2b97ab2d325e56116df8/starlette-0.45.3.tar.gz", hash = "sha256:2cbcba2a75806f8a41c722141486f37c28e30a0921c5f6fe4346cb0dcee1302f", size = 2574076 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d9/61/f2b52e107b1fc8944b33ef56bf6ac4ebbe16d91b94d2b87ce013bf63fb84/starlette-0.45.3-py3-none-any.whl", hash = "sha256:dfb6d332576f136ec740296c7e8bb8c8a7125044e7c6da30744718880cdd059d", size = 71507 },
+]
+
+[[package]]
+name = "strawberry-graphql"
+version = "0.260.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "graphql-core" },
+    { name = "python-dateutil" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ab/6f/af94168418c5e276298b9a217fb9c0fe0fbba1fcc126c0b730260bff4209/strawberry_graphql-0.260.2.tar.gz", hash = "sha256:c630a570c941a0c6b34398c7f9c87bcb5af18383557f1a1f45ed957a4ec7f4b7", size = 202257 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/42/e6/b82332702f1c1ff31eadaf980a6f5dddd83aaf40fd481fd3519e9024389e/strawberry_graphql-0.260.2-py3-none-any.whl", hash = "sha256:b3eb30bb1318b3a2d4405c100618b36e082899309fea8550029ef530d56c1276", size = 295820 },
 ]
 
 [[package]]

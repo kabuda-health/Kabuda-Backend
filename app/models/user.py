@@ -1,9 +1,9 @@
 from datetime import datetime
 from typing import Optional
 
+import strawberry
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-
 
 class UserCreate(BaseModel):
     email: str
@@ -22,6 +22,16 @@ class User(UserCreate):
         return cls(id=int(payload["sub"]), name=payload["name"], email=payload["email"])
 
     model_config = ConfigDict(from_attributes=True)
+
+
+@strawberry.type
+class UserType:
+    id: int
+    name: str
+
+    @staticmethod
+    def from_pydantic(user: User) -> "UserType":
+        return UserType(id=user.id, name=user.name)
 
 
 class Base(DeclarativeBase):
