@@ -1,37 +1,24 @@
-from strawberry.fastapi import GraphQLRouter
+
 import strawberry
+from strawberry.fastapi import GraphQLRouter
 from app.dependencies import UserDep
-from app.models.user import User as PydanticUser
-from fastapi import Request
-
-@strawberry.type
-class User:
-    id: int
-    name: str
-
-    @staticmethod
-    def from_pydantic(user: PydanticUser) -> "User":
-        return User(id=user.id, name=user.name)
+from app.models.user import UserType
 
 # Define GraphQL Schema
 @strawberry.type
 class Query:
     @strawberry.field
-    def whoami(self, info) -> User:
+    def whoami(self, info) -> UserType:
         user = info.context.get("user")
         if user is None:
             raise Exception("Authentication required")
-        return User.from_pydantic(user)
+        return UserType.from_pydantic(user)
 
 schema = strawberry.Schema(query=Query)
 
-async def get_context(request: Request, user: UserDep) -> dict:
-    token = request.headers.get("Authorization")
-    if not token:
-        return {"user": None}
-    
+async def get_context( user: UserDep) -> dict:
     return {"user": user}
 
-# Initialize GraphQL router
-graphql_router = GraphQLRouter(schema, context_getter=get_context, prefix="/data/graphql", tags=['graphql'])
 
+# Initialize GraphQL router
+router = GraphQLRouter(schema, context_getter=get_context, prefix="/data/graphql", tags=['graphql'])
