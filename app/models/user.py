@@ -5,6 +5,7 @@ import strawberry
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
+
 class UserCreate(BaseModel):
     email: str
     name: str
