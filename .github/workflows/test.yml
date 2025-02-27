@@ -2,24 +2,19 @@ name: Test
 
 on:
   push:
-    branches: [ $default-branch ]
+    branches: [$default-branch]
   pull_request:
-    branches: [ $default-branch ]
-
-permissions:
-  contents: read
+    branches: [$default-branch]
 
 jobs:
   lint:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Install uv
-      uses: astral-sh/setup-uv@v5
-    - name: Install the project
-      run: uv sync --all-extras --dev
-    - name: Lint
-      run: make lint
-    
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Install the project
+        run: uv sync --all-extras --dev
+      - name: Lint
+        run: make lint
