@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
-from typing import Optional
+from typing import AsyncGenerator, Optional, Self
 
 from loguru import logger
 from sqlalchemy import insert, select, update
@@ -15,21 +15,24 @@ class PgUserRepo:
         self.existing_transaction: Optional[AsyncSession] = None
 
     @asynccontextmanager
-    async def transaction(self):
+    async def transaction(self) -> AsyncGenerator[Self]:
         try:
-            assert self.existing_transaction is None
+            assert self.existing_transaction is None, "Transaction already exists"
             logger.info("Creating new transaction")
             async with self.async_session_maker() as conn:
                 async with conn.begin():
                     self.existing_transaction = conn
-                    yield
+                    logger.debug(f"new transaction id: {id(self.existing_transaction)}")
+                    yield self
         finally:
             self.existing_transaction = None
 
     @asynccontextmanager
-    async def get_transaction(self):
+    async def _get_transaction(self) -> AsyncGenerator[AsyncSession]:
         if self.existing_transaction is not None:
-            logger.info("Using existing transaction")
+            logger.info(
+                f"Using existing transaction with id: {id(self.existing_transaction)}"
+            )
             yield self.existing_transaction
         else:
             async with self.transaction():
@@ -37,7 +40,8 @@ class PgUserRepo:
                 yield self.existing_transaction
 
     async def get_user_by_id(self, user_id: int) -> Optional[User]:
-        async with self.get_transaction() as conn:
+        async with self._get_transaction() as conn:
+            logger.debug(f"connection_id: {id(conn)}")
             stmt = (
                 select(UserDb)
                 .where(UserDb.id == user_id, UserDb.deleted_at.is_(None))
@@ -45,11 +49,12 @@ class PgUserRepo:
             )
             user = await conn.scalar(stmt)
             if user is not None:
-                user = User.model_validate(user)
+                return User.model_validate(user)
             return user
 
     async def get_user_by_email(self, email: str) -> Optional[User]:
-        async with self.get_transaction() as conn:
+        async with self._get_transaction() as conn:
+            logger.debug(f"connection_id: {id(conn)}")
             stmt = (
                 select(UserDb)
                 .where(
@@ -60,17 +65,19 @@ class PgUserRepo:
             )
             user = await conn.scalar(stmt)
             if user is not None:
-                user = User.model_validate(user)
+                return User.model_validate(user)
             return user
 
     async def create_user(self, user: UserCreate) -> User:
-        async with self.get_transaction() as conn:
+        async with self._get_transaction() as conn:
+            logger.debug(f"connection_id: {id(conn)}")
             stmt = insert(UserDb).values(**user.model_dump()).returning(UserDb)
             created_user = await conn.scalar(stmt)
             return User.model_validate(created_user)
 
     async def create_session(self, user_id: int, session_id: str) -> str:
-        async with self.get_transaction() as conn:
+        async with self._get_transaction() as conn:
+            logger.debug(f"connection_id: {id(conn)}")
             stmt = (
                 insert(SessionDb)
                 .values(user_id=user_id, token=session_id)
@@ -80,7 +87,8 @@ class PgUserRepo:
             return session_id
 
     async def invalidate_active_sessions(self, user_id: int) -> None:
-        async with self.get_transaction() as conn:
+        async with self._get_transaction() as conn:
+            logger.debug(f"connection_id: {id(conn)}")
             stmt = (
                 update(SessionDb)
                 .where(
@@ -93,7 +101,8 @@ class PgUserRepo:
             await conn.execute(stmt)
 
     async def get_session(self, user_id: int, session_id: str) -> Optional[Session]:
-        async with self.get_transaction() as conn:
+        async with self._get_transaction() as conn:
+            logger.debug(f"connection_id: {id(conn)}")
             stmt = (
                 select(SessionDb)
                 .where(
@@ -105,9 +114,5 @@ class PgUserRepo:
             )
             session = await conn.scalar(stmt)
             if session is not None:
-                session = Session.model_validate(session)
+                return Session.model_validate(session)
             return session
-
-    async def commit(self):
-        async with self.get_transaction() as conn:
-            await conn.commit()

@@ -6,7 +6,7 @@ from pydantic import AnyUrl
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.models.user import User
-from app.repositories.user_repository import PgUserRepo
+from app.repositories.user_repository import PgUserRepo, UserRepoService
 from app.services.auth_service import AuthService
 from app.settings import settings
 
@@ -36,14 +36,10 @@ pg_engine = create_async_engine(
     pool_pre_ping=True,
 )
 
-auth_service = AuthService(PgUserRepo(pg_engine))
+auth_service = AuthService(UserRepoService(lambda: PgUserRepo(pg_engine)))
 
 
-def get_auth_service() -> AuthService:
-    return auth_service
-
-
-AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
+AuthServiceDep = Annotated[AuthService, Depends(lambda: auth_service)]
 
 
 def get_current_user(token: OAuthDep, auth_service: AuthServiceDep) -> User:
