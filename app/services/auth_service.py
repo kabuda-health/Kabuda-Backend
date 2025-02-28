@@ -4,18 +4,16 @@ from typing import Optional
 
 import arrow
 import jwt
-from authlib.integrations.starlette_client import (  # pyright: ignore[reportMissingImports]
-    OAuth,
-)
+from fastapi.datastructures import URL
 from loguru import logger
 
+from app.clients.oauth import OAuthClient
 from app.models import Token
 from app.models.user import User, UserCreate
 from app.repositories.user_repository import UserRepo
 from app.settings import settings
 
 JWT_ALGORITHM = "HS256"
-GOOGLE_CONF_URL = "https://accounts.google.com/.well-known/openid-configuration"
 
 
 def access_token_expiry():
@@ -35,17 +33,9 @@ class InvalidTokenError(ValueError):
 
 
 class AuthService:
-    def __init__(self, user_repo: UserRepo) -> None:
-        oauth_client = OAuth()
-        oauth_client.register(
-            name="google",
-            client_id=settings.google_auth_client_id,
-            client_secret=settings.google_auth_client_secret,
-            server_metadata_url=GOOGLE_CONF_URL,
-            client_kwargs={"scope": "openid email profile"},
-        )
+    def __init__(self, user_repo: UserRepo, oauth_client: OAuthClient) -> None:
         self.oauth_client = oauth_client
-        self.state_token_to_redirect_uri_map: dict[str, str] = {}
+        self.state_token_to_redirect_uri_map: dict[str, URL] = {}
         self.access_code_to_user_data_map: dict[str, UserCreate] = {}
         self.user_repo = user_repo
 
@@ -70,13 +60,13 @@ class AuthService:
         # TODO: Check against the database
         return data
 
-    def cache_redirect_uri(self, key: Optional[str], redirect_uri: str) -> str:
+    def cache_redirect_uri(self, key: Optional[str], redirect_uri: URL) -> str:
         if key is None:
             key = secrets.token_urlsafe()
         self.state_token_to_redirect_uri_map[key] = redirect_uri
         return key
 
-    def fetch_redirect_uri(self, key: str) -> str:
+    def fetch_redirect_uri(self, key: str) -> URL:
         return self.state_token_to_redirect_uri_map.pop(key)
 
     def cache_user_data(self, token: dict) -> str:
