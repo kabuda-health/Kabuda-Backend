@@ -26,7 +26,7 @@ async def get_context(user: UserDep) -> dict:
 # Initialize GraphQL router
 router = GraphQLRouter(
     schema,
-    context_getter=get_context,  # type: ignore
+    context_getter=get_context,  # type: ignore[arg-type]
     prefix="/data/graphql",
     tags=["graphql"],
 )

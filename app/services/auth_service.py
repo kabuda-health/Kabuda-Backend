@@ -4,7 +4,9 @@ from typing import Optional
 
 import arrow
 import jwt
-from authlib.integrations.starlette_client import OAuth
+from authlib.integrations.starlette_client import (  # pyright: ignore[reportMissingImports]
+    OAuth,
+)
 from loguru import logger
 
 from app.models import Token
