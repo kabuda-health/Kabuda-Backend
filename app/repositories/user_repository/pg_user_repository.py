@@ -11,21 +11,15 @@ from app.models.user import Session, SessionDb, User, UserCreate, UserDb
 
 class PgUserRepo:
     def __init__(self, engine: AsyncEngine) -> None:
+        self.engine = engine
         self.async_session_maker = async_sessionmaker(engine)
         self.existing_transaction: Optional[AsyncSession] = None
 
     @asynccontextmanager
     async def transaction(self) -> AsyncGenerator[Self]:
-        try:
-            assert self.existing_transaction is None, "Transaction already exists"
-            logger.info("Creating new transaction")
-            async with self.async_session_maker() as conn:
-                async with conn.begin():
-                    self.existing_transaction = conn
-                    logger.debug(f"new transaction id: {id(self.existing_transaction)}")
-                    yield self
-        finally:
-            self.existing_transaction = None
+        transaction_pg_repo = type(self)(self.engine)
+        async with transaction_pg_repo._get_transaction():
+            yield transaction_pg_repo
 
     @asynccontextmanager
     async def _get_transaction(self) -> AsyncGenerator[AsyncSession]:
@@ -35,9 +29,15 @@ class PgUserRepo:
             )
             yield self.existing_transaction
         else:
-            async with self.transaction():
-                assert self.existing_transaction is not None
-                yield self.existing_transaction
+            try:
+                logger.info("Creating new transaction")
+                async with self.async_session_maker() as conn:
+                    async with conn.begin():
+                        logger.debug(f"new transaction id: {id(conn)}")
+                        self.existing_transaction = conn
+                        yield conn
+            finally:
+                self.existing_transaction = None
 
     async def get_user_by_id(self, user_id: int) -> Optional[User]:
         async with self._get_transaction() as conn:

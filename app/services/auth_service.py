@@ -9,7 +9,7 @@ from loguru import logger
 
 from app.models import Token
 from app.models.user import User, UserCreate
-from app.repositories.user_repository import UserRepoService
+from app.repositories.user_repository import UserRepo
 from app.settings import settings
 
 JWT_ALGORITHM = "HS256"
@@ -33,7 +33,7 @@ class InvalidTokenError(ValueError):
 
 
 class AuthService:
-    def __init__(self, user_repo_service: UserRepoService) -> None:
+    def __init__(self, user_repo: UserRepo) -> None:
         oauth_client = OAuth()
         oauth_client.register(
             name="google",
@@ -45,7 +45,7 @@ class AuthService:
         self.oauth_client = oauth_client
         self.state_token_to_redirect_uri_map: dict[str, str] = {}
         self.access_code_to_user_data_map: dict[str, UserCreate] = {}
-        self.user_repo_service = user_repo_service
+        self.user_repo = user_repo
 
     @staticmethod
     def create_jwt(user_id: str, name: str, email: str, exp: arrow.Arrow) -> str:
@@ -91,7 +91,7 @@ class AuthService:
         self, grant_type: str, code: Optional[str], refresh_token: Optional[str]
     ) -> Token:
         logger.info(f"{grant_type=}, {code=}, {refresh_token=}")
-        async with self.user_repo_service.transaction() as tx:
+        async with self.user_repo.transaction() as tx:
             match grant_type:
                 case "authorization_code" if code:
                     user_create = self.fetch_user_data(code)
@@ -113,9 +113,7 @@ class AuthService:
                                 "Detected reuse of invalidated refresh token! Invalidating all sessions"
                             )
                             # Do this outside of the transaction context
-                            await self.user_repo_service.invalidate_active_sessions(
-                                user.id
-                            )
+                            await self.user_repo.invalidate_active_sessions(user.id)
                             raise ValueError(
                                 "Reuse of refresh token detected, you may be compromised"
                             )
