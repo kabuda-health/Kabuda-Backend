@@ -15,7 +15,7 @@ app.add_middleware(CorrelationIdMiddleware)
 
 
 @app.get("/")
-def root():
+def root() -> dict[str, str]:
     return {"Hello": "World"}
 
 

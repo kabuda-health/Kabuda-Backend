@@ -38,14 +38,14 @@ dev = [
 ]
 
 [tool.mypy]
-plugins = ['pydantic.mypy']
+plugins = ["pydantic.mypy", "strawberry.ext.mypy_plugin"]
 
 [[tool.mypy.overrides]]
 module = "testcontainers.postgres"
 ignore_missing_imports = true
 
 [tool.ruff.lint]
-extend-select = ["FAST", "I", "PL"]
+extend-select = ["FAST", "I", "PL", "ANN"]
 
 [tool.pytest.ini_options]
 filterwarnings = "ignore::DeprecationWarning:functools"
