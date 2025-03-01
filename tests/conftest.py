@@ -31,7 +31,7 @@ def pg_container() -> Generator[PostgresContainer]:
 
 
 @fixture
-def pg_engine(pg_container) -> AsyncEngine:
+def pg_engine(pg_container: PostgresContainer) -> AsyncEngine:
     connection_url = pg_container.get_connection_url(driver="asyncpg")
     return create_async_engine(
         connection_url,
@@ -41,12 +41,12 @@ def pg_engine(pg_container) -> AsyncEngine:
 
 
 @fixture
-def user_repo(pg_engine) -> UserRepo:
+def user_repo(pg_engine: AsyncEngine) -> UserRepo:
     return PgUserRepo(pg_engine)
 
 
 @fixture
-def auth_service(user_repo, oauth_client) -> AuthService:
+def auth_service(user_repo: UserRepo, oauth_client: OAuthClient) -> AuthService:
     return AuthService(user_repo, oauth_client)
 
 

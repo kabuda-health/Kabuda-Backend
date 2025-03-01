@@ -4,8 +4,8 @@ from typing import Optional
 
 import arrow
 import jwt
-from fastapi.datastructures import URL
 from arrow import Arrow
+from fastapi.datastructures import URL
 from loguru import logger
 
 from app.clients.oauth import OAuthClient

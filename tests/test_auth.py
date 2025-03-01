@@ -8,7 +8,7 @@ from httpx import AsyncClient
 from app.models import Token
 
 
-def test_it_works():
+def test_it_works() -> None:
     assert True
 
 
@@ -33,12 +33,12 @@ async def login(client: AsyncClient) -> Token:
 
 
 @pytest.mark.asyncio
-async def test_oauth_flow(test_client: AsyncClient):
+async def test_oauth_flow(test_client: AsyncClient) -> None:
     await login(test_client)
 
 
 @pytest.mark.asyncio
-async def test_refresh_tokens(test_client: AsyncClient):
+async def test_refresh_tokens(test_client: AsyncClient) -> None:
     token = await login(test_client)
     refresh_resp = await test_client.post(
         "/api/auth/token",
@@ -54,7 +54,9 @@ async def test_refresh_tokens(test_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_concurrent_logins(test_client_builder: Callable[..., AsyncClient]):
+async def test_concurrent_logins(
+    test_client_builder: Callable[..., AsyncClient],
+) -> None:
     async with test_client_builder(randomize_user=True) as test_client:
         coros = [login(test_client) for _ in range(10)]
         await asyncio.gather(*coros)
