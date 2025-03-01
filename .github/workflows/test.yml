@@ -28,5 +28,7 @@ jobs:
           cache-dependency-glob: "uv.lock"
       - name: Install the project
         run: uv sync --all-extras --dev
+      - name: copy env file
+        run: cp .env.ci .env
       - name: Lint
         run: make test
