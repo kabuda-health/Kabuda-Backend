@@ -21,6 +21,9 @@ class OAuthClient(Protocol):
 
 
 class MockOAuthClient:
+    def __init__(self, randomize: bool = False) -> None:
+        self.randomize = randomize
+
     async def authorize_redirect(
         self, request: Request, redirect_uri: URL, access_type: str, state: str
     ) -> RedirectResponse:
@@ -29,7 +32,17 @@ class MockOAuthClient:
         )
 
     async def authorize_access_token(self, request: Request) -> dict:
-        return {"userinfo": {"name": "foo", "email": "foo@bar.com"}}
+        request_id = request.headers.get("X-Request-ID")
+        name = "foo"
+        if self.randomize:
+            name = f"{name}-{request_id}"
+        email = f"{name}@bar.com"
+        return {
+            "userinfo": {
+                "name": name,
+                "email": email,
+            }
+        }
 
 
 class GoogleOAuthClient:
