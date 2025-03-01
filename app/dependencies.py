@@ -40,7 +40,11 @@ pg_engine = create_async_engine(
 auth_service = AuthService(PgUserRepo(pg_engine), GoogleOAuthClient())
 
 
-AuthServiceDep = Annotated[AuthService, Depends(lambda: auth_service)]
+def get_auth_service() -> AuthService:
+    return auth_service
+
+
+AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
 
 
 def get_current_user(token: OAuthDep, auth_service: AuthServiceDep) -> User:
