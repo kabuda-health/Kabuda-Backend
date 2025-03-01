@@ -4,16 +4,16 @@ from typing import Optional
 
 import arrow
 import jwt
-from authlib.integrations.starlette_client import OAuth
+from fastapi.datastructures import URL
 from loguru import logger
 
+from app.clients.oauth import OAuthClient
 from app.models import Token
 from app.models.user import User, UserCreate
 from app.repositories.user_repository import UserRepo
 from app.settings import settings
 
 JWT_ALGORITHM = "HS256"
-GOOGLE_CONF_URL = "https://accounts.google.com/.well-known/openid-configuration"
 
 
 def access_token_expiry():
@@ -33,17 +33,9 @@ class InvalidTokenError(ValueError):
 
 
 class AuthService:
-    def __init__(self, user_repo: UserRepo) -> None:
-        oauth_client = OAuth()
-        oauth_client.register(
-            name="google",
-            client_id=settings.google_auth_client_id,
-            client_secret=settings.google_auth_client_secret,
-            server_metadata_url=GOOGLE_CONF_URL,
-            client_kwargs={"scope": "openid email profile"},
-        )
+    def __init__(self, user_repo: UserRepo, oauth_client: OAuthClient) -> None:
         self.oauth_client = oauth_client
-        self.state_token_to_redirect_uri_map: dict[str, str] = {}
+        self.state_token_to_redirect_uri_map: dict[str, URL] = {}
         self.access_code_to_user_data_map: dict[str, UserCreate] = {}
         self.user_repo = user_repo
 
@@ -68,13 +60,13 @@ class AuthService:
         # TODO: Check against the database
         return data
 
-    def cache_redirect_uri(self, key: Optional[str], redirect_uri: str) -> str:
+    def cache_redirect_uri(self, key: Optional[str], redirect_uri: URL) -> str:
         if key is None:
             key = secrets.token_urlsafe()
         self.state_token_to_redirect_uri_map[key] = redirect_uri
         return key
 
-    def fetch_redirect_uri(self, key: str) -> str:
+    def fetch_redirect_uri(self, key: str) -> URL:
         return self.state_token_to_redirect_uri_map.pop(key)
 
     def cache_user_data(self, token: dict) -> str:
@@ -91,19 +83,19 @@ class AuthService:
         self, grant_type: str, code: Optional[str], refresh_token: Optional[str]
     ) -> Token:
         logger.info(f"{grant_type=}, {code=}, {refresh_token=}")
-        async with self.user_repo.transaction():
+        async with self.user_repo.transaction() as tx:
             match grant_type:
                 case "authorization_code" if code:
                     user_create = self.fetch_user_data(code)
-                    user = await self.user_repo.get_user_by_email(user_create.email)
+                    user = await tx.get_user_by_email(user_create.email)
                     if user is None:
                         logger.info(f"Creating user: {user_create}")
-                        user = await self.user_repo.create_user(user_create)
+                        user = await tx.create_user(user_create)
                 case "refresh_token" if refresh_token:
                     try:
                         jwt = self.verify_refresh_token(refresh_token)
                         user = User(id=jwt["sub"], name=jwt["name"], email=jwt["email"])
-                        session = await self.user_repo.get_session(
+                        session = await tx.get_session(
                             int(jwt["sub"]), self.hash_token(refresh_token)
                         )
                         if session is None:
@@ -112,9 +104,8 @@ class AuthService:
                             logger.error(
                                 "Detected reuse of invalidated refresh token! Invalidating all sessions"
                             )
+                            # Do this outside of the transaction context
                             await self.user_repo.invalidate_active_sessions(user.id)
-                            # Manually commit here because on exception, the transaction context manager will rollback
-                            await self.user_repo.commit()
                             raise ValueError(
                                 "Reuse of refresh token detected, you may be compromised"
                             )
@@ -135,6 +126,6 @@ class AuthService:
                 email=user.email,
                 exp=refresh_token_expiry(),
             )
-            await self.user_repo.invalidate_active_sessions(user.id)
-            await self.user_repo.create_session(user.id, self.hash_token(refresh_token))
+            await tx.invalidate_active_sessions(user.id)
+            await tx.create_session(user.id, self.hash_token(refresh_token))
             return Token(access_token=access_token, refresh_token=refresh_token)

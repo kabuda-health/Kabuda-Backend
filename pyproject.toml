@@ -30,10 +30,24 @@ dev = [
   "alembic>=1.14.1",
   "psycopg2-binary>=2.9.10",
   "taplo>=0.9.3",
+  "pyright>=1.1.395",
+  "pytest>=8.3.4",
+  "testcontainers[postgres]>=4.9.1",
+  "pytest-asyncio>=0.25.3",
+  "httpx>=0.28.1",
 ]
 
 [tool.mypy]
 plugins = ['pydantic.mypy']
 
+[[tool.mypy.overrides]]
+module = "testcontainers.postgres"
+ignore_missing_imports = true
+
 [tool.ruff.lint]
 extend-select = ["FAST", "I", "PL"]
+
+[tool.pytest.ini_options]
+filterwarnings = "ignore::DeprecationWarning:functools"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "module"
