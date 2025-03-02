@@ -1,0 +1,8 @@
+steps:
+# deploy container image to GKE
+- name: "gcr.io/cloud-builders/gke-deploy"
+  args:
+  - run
+  - --filename=k8s.yaml
+  - --location=us-central1
+  - --cluster=kabuda-backend

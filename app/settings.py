@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -20,5 +20,7 @@ class Settings(BaseSettings):
     db_port: int
     db_name: str
 
+    model_config = SettingsConfigDict(env_prefix="kabuda_backend_", env_file=".env")
 
-settings = Settings(_env_file=".env")  # pyright: ignore[reportCallIssue]
+
+settings = Settings()  # pyright: ignore[reportCallIssue]
