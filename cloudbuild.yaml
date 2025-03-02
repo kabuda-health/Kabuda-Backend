@@ -3,6 +3,6 @@ steps:
 - name: "gcr.io/cloud-builders/gke-deploy"
   args:
   - run
-  - --filename=k8s.yaml
+  - --filename=deploy.yaml
   - --location=us-central1
   - --cluster=kabuda-backend

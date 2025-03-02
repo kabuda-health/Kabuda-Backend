@@ -1,10 +1,15 @@
-from typing import Literal
+from enum import StrEnum, auto
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+class Env(StrEnum):
+    DEV = auto()
+    PROD = auto()
+
+
 class Settings(BaseSettings):
-    env: Literal["dev", "prod"]
+    env: Env
 
     host: str
     port: int
