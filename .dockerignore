@@ -10,11 +10,11 @@ wheels/
 .venv
 
 # Config files
-*.env
+.env
 .envrc
 
 # Docker Volumes
 postgres_data/
 
-# deployment
-deploy.yaml
+# test files
+test/

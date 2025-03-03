@@ -16,5 +16,5 @@ wheels/
 # Docker Volumes
 postgres_data/
 
-# deployment
-deploy.yaml
+# test files
+test/
