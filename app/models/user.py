@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Self
 
 import strawberry
 from pydantic import BaseModel, ConfigDict
@@ -15,24 +15,19 @@ class User(UserCreate):
     id: int
 
     @classmethod
-    def from_user_create(cls, user: UserCreate, id: int):
+    def from_user_create(cls, user: UserCreate, id: int) -> Self:
         return cls(id=id, email=user.email, name=user.name)
 
     @classmethod
-    def from_jwt_payload(cls, payload: dict):
+    def from_jwt_payload(cls, payload: dict) -> Self:
         return cls(id=int(payload["sub"]), name=payload["name"], email=payload["email"])
 
     model_config = ConfigDict(from_attributes=True)
 
 
-@strawberry.type
-class UserType:
-    id: int
-    name: str
-
-    @staticmethod
-    def from_pydantic(user: User) -> "UserType":
-        return UserType(id=user.id, name=user.name)
+@strawberry.experimental.pydantic.type(name="User", model=User, all_fields=True)
+class UserGQL:
+    pass
 
 
 class Base(DeclarativeBase):

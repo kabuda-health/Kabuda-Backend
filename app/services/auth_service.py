@@ -4,6 +4,7 @@ from typing import Optional
 
 import arrow
 import jwt
+from arrow import Arrow
 from fastapi.datastructures import URL
 from loguru import logger
 
@@ -16,11 +17,11 @@ from app.settings import settings
 JWT_ALGORITHM = "HS256"
 
 
-def access_token_expiry():
+def access_token_expiry() -> Arrow:
     return arrow.utcnow().shift(minutes=15)
 
 
-def refresh_token_expiry():
+def refresh_token_expiry() -> Arrow:
     return arrow.utcnow().shift(days=7)
 
 
