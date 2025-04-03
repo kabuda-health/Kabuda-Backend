@@ -1,9 +1,9 @@
-from typing import Annotated
+from typing import Annotated, AsyncGenerator
 
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from pydantic import AnyUrl
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 from app.clients.oauth import GoogleOAuthClient
 from app.models.user import User
@@ -56,3 +56,10 @@ def get_current_user(token: OAuthDep, auth_service: AuthServiceDep) -> User:
 
 
 UserDep = Annotated[User, Depends(get_current_user)]
+
+async_session_maker = async_sessionmaker(pg_engine, class_=AsyncSession, expire_on_commit=False)
+
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session_maker() as session:
+        yield session
+
