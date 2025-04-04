@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.dependencies import get_db, UserDep
+from app.dependencies import get_db, get_current_user
 from app.models.user import User
 from app.models.health import DailyHealthData
 from pydantic import BaseModel
@@ -25,7 +25,7 @@ class DailyHealthDataIn(BaseModel):
 async def upload_health_data(
     daily_data: List[DailyHealthDataIn],
     db: AsyncSession = Depends(get_db),
-    user: User = UserDep
+    user: User = Depends(get_current_user)
 ):
     for entry in daily_data:
         db.add(DailyHealthData(
