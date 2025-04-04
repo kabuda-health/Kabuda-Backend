@@ -1,13 +1,12 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from typing import Optional, List, Annotated
+from datetime import date
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.dependencies import get_db, get_current_user
 from app.models.user import User
 from app.models.health import DailyHealthData
 from pydantic import BaseModel
-from typing import Optional, List
-from datetime import date
-from sqlalchemy.ext.asyncio import AsyncSession
-
 
 router = APIRouter()
 
@@ -24,9 +23,9 @@ class DailyHealthDataIn(BaseModel):
 @router.post("/health-upload/")
 async def upload_health_data(
     daily_data: List[DailyHealthDataIn],
-    db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_current_user)
-):
+    db: Annotated[AsyncSession, Depends(get_db)],
+    user: Annotated[User, Depends(get_current_user)]
+) -> dict:
     for entry in daily_data:
         db.add(DailyHealthData(
             user_id=user.id,
@@ -41,4 +40,3 @@ async def upload_health_data(
         ))
     await db.commit()
     return {"message": "success"}
-
