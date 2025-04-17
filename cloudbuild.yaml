@@ -2,8 +2,6 @@ steps:
 # Step 1: Submit source code
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', '$_IMAGE_NAME:$_IMAGE_TAG', '.']
-options:
-  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
 
 # Step 2: Push the container image
 - name: 'gcr.io/cloud-builders/docker'
@@ -16,6 +14,9 @@ options:
   - --filename=deploy.yaml
   - --location=us-central1
   - --cluster=kabuda-backend
+
+options:
+  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
 
 substitutions:
   _IMAGE_NAME: us-west2-docker.pkg.dev/careful-granite-450104-s7/kabuda-backend/api-server
