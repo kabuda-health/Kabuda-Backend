@@ -1,11 +1,11 @@
 steps:
 # Step 1: Submit source code
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', '$_IMAGE_NAME:$_IMAGE_TAG', '.']
+  args: ['build', '-t', '$_IMAGE_NAME:$COMMIT_SHA', '.']
 
 # Step 2: Push the container image
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', '$_IMAGE_NAME:$_IMAGE_TAG']
+  args: ['push', '$_IMAGE_NAME:$COMMIT_SHA']
 
 # Step 3: Generate deployment file
 - name: 'alpine'
@@ -27,4 +27,4 @@ options:
 
 substitutions:
   _IMAGE_NAME: us-west2-docker.pkg.dev/careful-granite-450104-s7/kabuda-backend/api-server
-  _IMAGE_TAG: latest
+  _IMAGE_TAG: $COMMIT_SHA

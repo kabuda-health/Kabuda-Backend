@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
         - name: api-server
-          image: us-west2-docker.pkg.dev/careful-granite-450104-s7/kabuda-backend/api-server:latest
-          imagePullPolicy: IfNotPresent
+          image: us-west2-docker.pkg.dev/careful-granite-450104-s7/kabuda-backend/api-server:${_IMAGE_TAG}
+          imagePullPolicy: Always
           envFrom:
             - configMapRef:
                 name: api-server-config
