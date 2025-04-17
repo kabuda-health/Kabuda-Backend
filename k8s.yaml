@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: api-server
-          image: us-west2-docker.pkg.dev/$GCLOUD_PROJECT_ID/kabuda-backend/api-server:$GCLOUD_IMAGE_TAG
+          image: us-west2-docker.pkg.dev/careful-granite-450104-s7/kabuda-backend/api-server:latest
           imagePullPolicy: IfNotPresent
           envFrom:
             - configMapRef:

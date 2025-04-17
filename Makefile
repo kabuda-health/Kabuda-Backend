@@ -18,17 +18,17 @@ test:
 migrate:
 	uv run -- alembic upgrade head
 
-TAG ?= $(shell echo $$GCLOUD_IMAGE_TAG)
+GCLOUD_PROJECT_ID=careful-granite-450104-s7
 
-PROJECT_ID := $(shell echo $$GCLOUD_PROJECT_ID)
+GCLOUD_IMAGE_TAG="latest"
 
-IMAGE_NAME = us-west2-docker.pkg.dev/$(PROJECT_ID)/kabuda-backend/api-server
+IMAGE_NAME = us-west2-docker.pkg.dev/$(GCLOUD_PROJECT_ID)/kabuda-backend/api-server
 
 build:
-	docker build --platform="linux/amd64" -t $(IMAGE_NAME):$(TAG) .
+	docker build --platform="linux/amd64" -t $(IMAGE_NAME):$(GCLOUD_IMAGE_TAG) .
 
 push: build
-	docker push $(IMAGE_NAME):$(TAG)
+	docker push $(IMAGE_NAME):$(GCLOUD_IMAGE_TAG)
 
 deploy: push
 	envsubst < k8s.yaml > deploy.yaml
