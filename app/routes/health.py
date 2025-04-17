@@ -23,7 +23,7 @@ class DailyHealthDataIn(BaseModel):
     diastolic_bp: Optional[int]
 
 
-@router.post("/health-upload/")
+@router.post("/health/")
 async def upload_health_data(
     daily_data: List[DailyHealthDataIn],
     db: Annotated[AsyncSession, Depends(get_db)],
