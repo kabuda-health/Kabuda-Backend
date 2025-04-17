@@ -5,29 +5,28 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.dependencies import get_current_user, get_db
+from app.dependencies import UserDep, get_db
 from app.models.health import DailyHealthData
-from app.models.user import User
 
 router = APIRouter()
 
 
 class DailyHealthDataIn(BaseModel):
     date: date
-    weight_kg: Optional[float]
-    height_m: Optional[float]
-    resting_hr: Optional[float]
-    sleep_duration_hr: Optional[float]
-    sleep_quality: Optional[str]
-    systolic_bp: Optional[int]
-    diastolic_bp: Optional[int]
+    weight_kg: Optional[float] = None
+    height_m: Optional[float] = None
+    resting_hr: Optional[float] = None
+    sleep_duration_hr: Optional[float] = None
+    sleep_quality: Optional[str] = None
+    systolic_bp: Optional[int] = None
+    diastolic_bp: Optional[int] = None
 
 
 @router.post("/health/")
 async def upload_health_data(
     daily_data: List[DailyHealthDataIn],
     db: Annotated[AsyncSession, Depends(get_db)],
-    user: Annotated[User, Depends(get_current_user)],
+    user: UserDep,
 ) -> dict:
     for entry in daily_data:
         db.add(

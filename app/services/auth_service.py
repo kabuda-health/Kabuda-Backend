@@ -14,7 +14,8 @@ from app.models.user import User, UserCreate
 from app.repositories.user_repository import UserRepo
 from app.settings import settings
 
-JWT_ALGORITHM = "HS256"
+# Supported JWT algorithms
+JWT_ALGORITHMS = ["HS256", "RS256"]
 
 
 def access_token_expiry() -> Arrow:
@@ -43,11 +44,11 @@ class AuthService:
     @staticmethod
     def create_jwt(user_id: str, name: str, email: str, exp: arrow.Arrow) -> str:
         payload = {"sub": user_id, "name": name, "email": email, "exp": exp.timestamp()}
-        return jwt.encode(payload, settings.secret_key, algorithm=JWT_ALGORITHM)
+        return jwt.encode(payload, settings.secret_key, algorithm=JWT_ALGORITHMS[0])
 
     @staticmethod
     def verify_jwt(token: str) -> dict:
-        return jwt.decode(token, settings.secret_key, algorithms=[JWT_ALGORITHM])
+        return jwt.decode(token, settings.secret_key, algorithms=JWT_ALGORITHMS)
 
     @staticmethod
     def hash_token(token: str) -> str:
