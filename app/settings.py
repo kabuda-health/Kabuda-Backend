@@ -1,10 +1,15 @@
-from typing import Literal
+from enum import StrEnum, auto
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Env(StrEnum):
+    DEV = auto()
+    PROD = auto()
 
 
 class Settings(BaseSettings):
-    env: Literal["dev", "prod"]
+    env: Env
 
     host: str
     port: int
@@ -20,5 +25,7 @@ class Settings(BaseSettings):
     db_port: int
     db_name: str
 
+    model_config = SettingsConfigDict(env_prefix="kabuda_backend_", env_file=".env")
 
-settings = Settings(_env_file=".env")  # pyright: ignore[reportCallIssue]
+
+settings = Settings()  # pyright: ignore[reportCallIssue]

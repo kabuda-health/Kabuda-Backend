@@ -1,0 +1,15 @@
+steps:
+# Step 1: Authenticate with Google Cloud
+- name: Authenticate to Google Cloud
+  id: auth
+  uses: 'google-github-actions/auth@v2'
+  with:
+    project_id: 'my-project'
+    workload_identity_provider: 'projects/771040387666/locations/global/workloadIdentityPools/github/providers/my-repo'
+# Step 2: Deploy container image to GKE
+- name: "gcr.io/cloud-builders/gke-deploy"
+  args:
+  - run
+  - --filename=deploy.yaml
+  - --location=us-central1
+  - --cluster=kabuda-backend
