@@ -8,7 +8,7 @@ steps:
   args: ['push', '$_IMAGE_NAME:$_IMAGE_TAG']
 
 # Step 3: Generate deployment file
-- name: 'gcr.io/cloud-builders/gcloud'
+- name: 'gcr.io/cloud-builders/gcloud-slim'
   entrypoint: 'bash'
   args:
     - '-c'
