@@ -12,7 +12,7 @@ steps:
   entrypoint: 'sh'
   args:
     - '-c'
-    - 'apk add --no-cache gettext && cd /workspace && envsubst < k8s.yaml > deploy.yaml'
+    - 'apk add --no-cache gettext && cd /workspace && envsubst < k8s.yaml | sed "s/\${_IMAGE_TAG}/$COMMIT_SHA/g" > deploy.yaml'
 
 # Step 4: Deploy to GKE
 - name: 'gcr.io/cloud-builders/gke-deploy'
