@@ -31,10 +31,8 @@ push: build
 	docker push $(IMAGE_NAME):$(GCLOUD_IMAGE_TAG)
 
 deploy: push
-	envsubst < k8s.yaml > deploy.yaml
 	gcloud builds submit
 
 deploy_only:
-	envsubst < k8s.yaml > deploy.yaml
 	gcloud builds submit
 
