@@ -1,5 +1,5 @@
 steps:
-# Step 1: Build Docker image
+# Step 1: Submit source code
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', '$_IMAGE_NAME:$_IMAGE_TAG', '.']
 
@@ -7,14 +7,20 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', '$_IMAGE_NAME:$_IMAGE_TAG']
 
-# Step 3: Deploy to GKE
+# Step 3: Generate deployment file
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - 'cd /workspace && envsubst < k8s.yaml > deploy.yaml'
+
+# Step 4: Deploy to GKE
 - name: 'gcr.io/cloud-builders/gke-deploy'
   args:
-  - 'run'
-  - '--filename=deploy.yaml'
-  - '--location=us-central1'
-  - '--cluster=kabuda-backend'
-  - '--image=$_IMAGE_NAME:$_IMAGE_TAG'
+  - run
+  - --filename=deploy.yaml
+  - --location=us-central1
+  - --cluster=kabuda-backend
 
 options:
   defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
