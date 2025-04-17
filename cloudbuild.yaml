@@ -2,6 +2,8 @@ steps:
 # Step 1: Submit source code
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', '$_IMAGE_NAME:$_IMAGE_TAG', '.']
+options:
+  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
 
 # Step 2: Push the container image
 - name: 'gcr.io/cloud-builders/docker'
