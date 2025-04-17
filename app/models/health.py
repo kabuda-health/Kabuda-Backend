@@ -1,18 +1,20 @@
-from sqlalchemy import Column, Integer, Float, String, Date, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Date, Float, ForeignKey, Integer, String
+
 from app.models.user import Base
+
 
 class DailyHealthData(Base):
     __tablename__ = "daily_health_data"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     date = Column(Date, nullable=False)
-
-    weight_kg = Column(Float, nullable=True)
-    height_m = Column(Float, nullable=True)
-    resting_hr = Column(Float, nullable=True)
-    sleep_duration_hr = Column(Float, nullable=True)
-    sleep_quality = Column(String, nullable=True)
-    systolic_bp = Column(Integer, nullable=True)
-    diastolic_bp = Column(Integer, nullable=True)
+    steps = Column(Integer, nullable=True)
+    calories = Column(Float, nullable=True)
+    distance = Column(Float, nullable=True)
+    active_minutes = Column(Integer, nullable=True)
+    heart_rate = Column(Float, nullable=True)
+    sleep_duration = Column(Float, nullable=True)
+    sleep_quality = Column(Float, nullable=True)
+    created_at = Column(String, nullable=False)
+    updated_at = Column(String, nullable=False)
