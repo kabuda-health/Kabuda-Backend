@@ -7,13 +7,23 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', '$_IMAGE_NAME:$_IMAGE_TAG']
 
-# Step 3: Deploy to GKE
+# Step 3: Generate deployment file
+- name: 'alpine'
+  entrypoint: 'sh'
+  args:
+    - '-c'
+    - 'apk add --no-cache gettext && cd /workspace && envsubst < k8s.yaml > deploy.yaml'
+
+# Step 4: Deploy to GKE
 - name: 'gcr.io/cloud-builders/gke-deploy'
   args:
   - run
   - --filename=deploy.yaml
   - --location=us-central1
   - --cluster=kabuda-backend
+
+options:
+  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
 
 substitutions:
   _IMAGE_NAME: us-west2-docker.pkg.dev/careful-granite-450104-s7/kabuda-backend/api-server
