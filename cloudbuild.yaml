@@ -8,11 +8,11 @@ steps:
   args: ['push', '$_IMAGE_NAME:$_IMAGE_TAG']
 
 # Step 3: Generate deployment file
-- name: 'gcr.io/cloud-builders/gcloud-slim'
-  entrypoint: 'bash'
+- name: 'alpine'
+  entrypoint: 'sh'
   args:
     - '-c'
-    - 'cd /workspace && envsubst < k8s.yaml > deploy.yaml'
+    - 'apk add --no-cache gettext && cd /workspace && envsubst < k8s.yaml > deploy.yaml'
 
 # Step 4: Deploy to GKE
 - name: 'gcr.io/cloud-builders/gke-deploy'
