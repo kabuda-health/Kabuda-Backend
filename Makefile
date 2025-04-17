@@ -20,7 +20,7 @@ migrate:
 
 GCLOUD_PROJECT_ID=careful-granite-450104-s7
 
-GCLOUD_IMAGE_TAG="latest"
+GCLOUD_IMAGE_TAG=latest
 
 IMAGE_NAME = us-west2-docker.pkg.dev/$(GCLOUD_PROJECT_ID)/kabuda-backend/api-server
 
